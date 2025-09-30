@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
@@ -9,56 +10,145 @@ namespace OOP_Lab1
 {
     internal class GunBase_Class
     {
-        public string internal_name, manufacturing_date, manufacturer;
-        public string display_name;
-        public int max_ammo, loaded_ammo, ammo_reserve;
+        private string _internal_name, _manufacturing_date, _manufacturer;
+        private string _display_name, _user_who_created;
+        private int _max_ammo, _loaded_ammo, _ammo_reserve;
+        private int _damage;
 
+        #region fields
+        public string Internal_name
+        {
+            get { return _internal_name; }
+            set 
+            {
+                if (value.Length < 3)
+                    throw new Exception("The name is too short.");
+                if (value.Length > 20)
+                    throw new Exception("The name is too long.");
+                else _internal_name = value; 
+            }
+        }
+        public string Manufacturing_date
+        {
+            get { return _manufacturing_date; }
+            set { _manufacturing_date = value; }
+        }
+        public string Manufacturer
+        {
+            get { return _manufacturer; }
+            set
+            {
+                if (value.Length < 3)
+                    throw new Exception("Name of manufacturer is too short, must be longer than 3");
+                if (value.Length > 20)
+                    throw new Exception("Name of manufacturer is too long, Must be shorter than 20");
+                else _manufacturer = value; 
+            }
+        }
+        public string Display_name
+        {
+            get { return _display_name; }
+            set 
+            {
+                if (value.Length < 3)
+                    throw new Exception("The name is too short.");
+                if (value.Length > 20)
+                    throw new Exception("The name is too long.");
+                else _display_name = value; 
+            }
+        }
+        public string User_who_created
+        {
+            get { return _user_who_created; }
+            private set { _user_who_created = value; }
+        }
+        public int Max_ammo
+        {
+            get { return _max_ammo; }
+            set 
+            {
+                if (value <= 0)
+                    throw new Exception("Magazine size must be greater than 0.");
+                if (value >= 100)
+                    throw new Exception($"Magazine size must be lesser than 100.");
+                else _max_ammo = value; 
+            }
+        }
+        public int Loaded_ammo
+        {
+            get { return _loaded_ammo; }
+            set
+            {
+                _loaded_ammo = value; 
+            }
+        }
+        public int Ammo_reserve
+        {
+            get { return _ammo_reserve; }
+            set
+            {
+                if (value < 0)
+                    throw new Exception("Reserve of ammunition must be greater or equal to 0.");
+                if (value >= (_max_ammo * 10))
+                    throw new Exception($"Reserve of ammunition must be lesser than {(_max_ammo * 10)}.");
+                else _ammo_reserve = value; 
+            }
+        }
+        public int Damage { get; set; }
+        #endregion
         #region functions;
         public string General_info()
         {
-            return ("Name: " + display_name + "\n" + "Manufacturer: " + manufacturer);
+            return ("Name: " + _display_name + "\n" + "Manufacturer: " + _manufacturer);
         }
 
         public string check_ammo()
         {
-            return (loaded_ammo + " rounds out of " + max_ammo);
+            return (_loaded_ammo + " rounds out of " + _max_ammo);
         }
         public string check_reserve()
         {
-            return ($"{ammo_reserve} bullets left. ");
+            return ($"{_ammo_reserve} bullets left. ");
         }
         public string reload()
         {
             string message;
-            if (loaded_ammo == max_ammo)
+            if (_loaded_ammo == _max_ammo)
             {
                 return ("Already full!");
             }
-            if (!(max_ammo - loaded_ammo >= ammo_reserve))
+            if (!(_max_ammo - _loaded_ammo >= _ammo_reserve))
             {
-                ammo_reserve -= max_ammo - loaded_ammo;
-                loaded_ammo = max_ammo;
-                return ($"Reloaded to full! {ammo_reserve} bullets left.");
+                _ammo_reserve -= _max_ammo - _loaded_ammo;
+                _loaded_ammo = _max_ammo;
+                return ($"Reloaded to full! {_ammo_reserve} bullets left.");
             }
-            if (max_ammo - loaded_ammo >= ammo_reserve && ammo_reserve != 0)
+            if (_max_ammo - _loaded_ammo >= _ammo_reserve && _ammo_reserve != 0)
             {
-                loaded_ammo += ammo_reserve;
-                message = ($"There were not enough bullets for full reload, {ammo_reserve} loaded; {loaded_ammo} rounds out of {max_ammo}.");
-                ammo_reserve = 0;
+                _loaded_ammo += _ammo_reserve;
+                message = ($"There were not enough bullets for full reload, {_ammo_reserve} loaded; {_loaded_ammo} rounds out of {_max_ammo}.");
+                _ammo_reserve = 0;
                 return message;
             }
-            if (ammo_reserve <= 0)
+            if (_ammo_reserve <= 0)
             {
                 return ("No munition left!");
             }
             return (" ");
         }
-
+        private void Deal_damage(int Damage)
+        {
+            Random RNG = new Random();
+            int RandomDamageModifier = RNG.Next(75, 126);
+            Console.WriteLine($"Dealt {Damage * RandomDamageModifier / 100} points of damage.");
+        }
         public string Fire()
         {
-            if (loaded_ammo>=1)
+            Random rnd = new Random();
+            if (_loaded_ammo>=1)
             {
-                loaded_ammo -= 1;
+                _loaded_ammo -= 1;
+                Deal_damage(Damage);
                 return "*pew*";
             }
             else
@@ -68,14 +158,22 @@ namespace OOP_Lab1
         }
         public string FireTenRounds()
         {
-            if (loaded_ammo >= 10)
+            if (_loaded_ammo >= 10)
             {
-                loaded_ammo -= 10;
+                _loaded_ammo -= 10;
+                for (int i = 0; i<10;i++)
+                {
+                    Deal_damage(Damage);
+                }
                 return "*pew-pew*";
             }
-            else if (loaded_ammo >=1 && loaded_ammo <10)
+            else if (_loaded_ammo >=1 && _loaded_ammo <10)
             {
-                loaded_ammo = 0;
+                for (int i = 0; i < _loaded_ammo; i++)
+                {
+                    Deal_damage(Damage);
+                }
+                _loaded_ammo = 0;
                 return "The burst stops earlier than expected. The gun is empty!";
             }
             else
@@ -85,8 +183,15 @@ namespace OOP_Lab1
         }
         public override string ToString()
         {
-            return ($"Name: {display_name}, Magazine size: {max_ammo}, Reserves: {ammo_reserve}" +
-                $", Manufacturer: {manufacturer}, Date of production: {manufacturing_date}");
+            return ($"Name: {_display_name}, Internal name: {_internal_name}, Magazine size: {_max_ammo}, Reserves: {_ammo_reserve}" +
+                $", Manufacturer: {_manufacturer}, Date of production: {_manufacturing_date}");
+        }
+        #endregion
+        #region constructor
+        public GunBase_Class(string user)
+        {
+            _user_who_created = user;
+            _loaded_ammo = _max_ammo;
         }
         #endregion
     }

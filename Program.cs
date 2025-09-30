@@ -1,56 +1,62 @@
 ﻿// Console.WriteLine("\n" + new string('–', 25));
 // Console.WriteLine(new string('–', 25) + "\n");
 using System.Data.SqlTypes;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using OOP_Lab1;
 int Current_amout_of_items=0;
-GunBase_Class placeholder_gun = new();
+string userName = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+GunBase_Class placeholder_gun = new(userName);
 GunBase_Class[] main_Array = new GunBase_Class[3]; 
 main_Array[0] = placeholder_gun;
 void Run_Debug_Filling()
 {
-    GunBase_Class Temp = new()
+    GunBase_Class Temp = new(userName)
     {
-        display_name = "USP-S",
-        internal_name = "temp_usp",
-        max_ammo = 12,
-        loaded_ammo = 12,
-        ammo_reserve = 60,
-        manufacturing_date = "01.01.1993",
-        manufacturer = "H&K"
+        Damage = 23,
+        Display_name = "USP-S",
+        Internal_name = "test_usp",
+        Max_ammo = 12,
+        //Loaded_ammo = 12,
+        Ammo_reserve = 60,
+        Manufacturing_date = "01.01.1993",
+        Manufacturer = "H&K"
     };
     main_Array[Current_amout_of_items] = Temp;
     Current_amout_of_items++;
 
-    Temp = new()
+    Temp = new(userName)
     {
-        display_name = "Desert Eagle",
-        internal_name = "temp_deagle",
-        max_ammo = 7,
-        loaded_ammo = 7,
-        ammo_reserve = 21,
-        manufacturing_date = "01.12.1983",
-        manufacturer = "IMI"
+        Damage = 75,
+        Display_name = "Desert Eagle",
+        Internal_name = "temp_deagle",
+        Max_ammo = 7,
+        //Loaded_ammo = 7,
+        Ammo_reserve = 21,
+        Manufacturing_date = "01.12.1983",
+        Manufacturer = "IMI"
     };
     main_Array[Current_amout_of_items] = Temp;
     Current_amout_of_items++;
 
-    Temp = new()
+    Temp = new(userName)
     {
-        display_name = "Glock-19",
-        internal_name = "temp_glock19",
-        max_ammo = 20,
-        loaded_ammo = 20,
-        ammo_reserve = 80,
-        manufacturing_date = "01.01.1988",
-        manufacturer = "Glock GmbH"
+        Damage = 16,
+        Display_name = "Glock-19",
+        Internal_name = "temp_glock19",
+        Max_ammo = 20,
+        //Loaded_ammo = 20,
+        Ammo_reserve = 80,
+        Manufacturing_date = "01.01.1988",
+        Manufacturer = "Glock GmbH"
     };
     main_Array[Current_amout_of_items] = Temp;
     Current_amout_of_items++;
 }
 
 int menu_choice,N;
+Console.WriteLine("-1 = Debug");
 Console.WriteLine("How many items you want to make? ");
 N = int.Parse(Console.ReadLine());
 switch (N)
@@ -102,15 +108,9 @@ while (true){
             break;
         case 5:
             if (Current_amout_of_items > 0)
-            {
-                Console.WriteLine($"Deleted {main_Array[Current_amout_of_items - 1].display_name}");
-                Current_amout_of_items--;
-            }
+                Delete_item();
             else
-            {
                 Console.WriteLine("Already no items! ");
-            }
-            
             break;
         case 0:
             return 200;
@@ -171,72 +171,88 @@ string Interact_menu(GunBase_Class Temp)
 void create_object()
 {
     string public_name="placeholder", private_name = "placeholder", manufac = "placeholder", date = "01.01.1981";
-    int ammo_mag=1, ammo_reserve=1;
+    int ammo_mag=1, ammo_reserve;
+    GunBase_Class Object = new GunBase_Class(userName);
+    bool Flag=false ;
     do //visible name
     {
-        if (public_name.Length < 3 )
-            Console.WriteLine("The name is too short.");
-        if (public_name.Length >20 )
-            Console.WriteLine("The name is too long.");
+        Flag = false;
         Console.WriteLine("Input displayed name: ");
         public_name = Console.ReadLine();
-    } while (public_name.Length < 3 || public_name.Length > 20);    
+        try { Object.Display_name = public_name; }
+        catch(Exception ex) 
+        { 
+            Console.WriteLine(ex.Message);
+            Flag = true;
+        }
+    
+    } while (Flag);   // 
 
+    
     do //internal name
     {
-        if (private_name.Length < 3)
-            Console.WriteLine("The name is too short.");
-        if (private_name.Length > 20)
-            Console.WriteLine("The name is too long.");        
+        Flag = false;
         Console.WriteLine("Input internal name: ");
         private_name = Console.ReadLine();
-    } while (private_name.Length < 3 || private_name.Length > 20);
+        try { Object.Internal_name = private_name; }
+        catch (Exception ex) { Console.WriteLine(ex.Message);
+            Flag = true;
+        }
+    } while (Flag); 
 
     do //magsize
     {
-        if (ammo_mag <= 0)
-            Console.WriteLine("Magazine size must be greater than 0.");
-        if (ammo_mag >= 100)
-            Console.WriteLine($"Magazine size must be lesser than 100.");
+        Flag = false;
+        bool Boolean;
         Console.WriteLine("Input the mag size: ");
-        ammo_mag = int.Parse(Console.ReadLine()); //tryparse
-    } while (!(ammo_mag > 0 && ammo_mag <= 100));
+        Boolean = Int32.TryParse(Console.ReadLine().ToString(), out ammo_mag); //tryparse
+        try{ Object.Max_ammo = ammo_mag; }
+        catch (Exception ex) { Console.WriteLine(ex.Message);
+            Flag = true;
+        };
+    } while (Flag);
 
     do //reserve ammo
     {
-        if (ammo_reserve <= 0)
-            Console.WriteLine("Reserve of ammunition must be greater than 0.");
-        if (ammo_reserve >= (ammo_mag*10))
-            Console.WriteLine($"Reserve of ammunition must be lesser than {(ammo_mag*10)}.");
+        Flag = false;
+        bool Boolean;
         Console.WriteLine("Input the reserve size: ");
-        ammo_reserve = int.Parse(Console.ReadLine()); //tryparse
-    } while (!(ammo_reserve >= 0 && ammo_reserve <= (ammo_mag * 10)));
+        Boolean = Int32.TryParse(Console.ReadLine().ToString(), out ammo_reserve);//tryparse
+        if (!(Boolean))
+        {
+            ammo_reserve = -1;
+        }
+        try { Object.Ammo_reserve = ammo_reserve; }
+        catch(Exception ex) { Console.WriteLine(ex.Message);
+            Flag = true;
+        }
+    } while (Flag);
 
     do //manufacturer
     {
-        if (manufac.Length < 3)
-            Console.WriteLine("Name of manufacturer is too short, must be longer than 3");
-        if (manufac.Length > 20)
-            Console.WriteLine("Name of manufacturer is too long, Must be shorter than 20");
+        Flag = false;
         Console.WriteLine("Input name of manufacturer: ");
         manufac = Console.ReadLine();
-    } while (manufac.Length < 3 || manufac.Length > 20);
+        try { Object.Manufacturer = manufac; }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Flag = true;
+        }
+    }  while (Flag);
 
     do //Manufacturing date
     {
-
+        DateTime localDate = DateTime.Now;
+        Object.Manufacturing_date = localDate.ToString();
     } while (false);
-    //Manufacturng time
-    DateTime localDate = DateTime.Now;
-    GunBase_Class Object = new GunBase_Class();
-    Object.display_name = public_name;
-    Object.internal_name = private_name;
-    Object.max_ammo = ammo_mag;
-    Object.ammo_reserve = ammo_reserve;
-    Object.manufacturer = manufac;
-    Object.manufacturing_date = localDate.ToString();
-    Console.WriteLine("Gun created!");
+    Object.Display_name = public_name;
+    Object.Internal_name = private_name;
+    Object.Max_ammo = ammo_mag;
+    Object.Ammo_reserve = ammo_reserve;
+    Object.Manufacturer = manufac;
     main_Array[Current_amout_of_items] = Object;
+    Console.WriteLine("Object created!");
     Current_amout_of_items++;
 }
 void Output_items()
@@ -264,7 +280,7 @@ void Find_item()
                 search_display_name = Console.ReadLine();
                 for (int i = 0; i < Current_amout_of_items; i++)
                 {
-                    int index = main_Array[i].display_name.IndexOf(search_display_name, StringComparison.OrdinalIgnoreCase);
+                    int index = main_Array[i].Display_name.IndexOf(search_display_name, StringComparison.OrdinalIgnoreCase);
 
                     bool containsSubString = (index != -1);
                     if (containsSubString)
@@ -279,7 +295,7 @@ void Find_item()
             search_display_name = Console.ReadLine();
             for (int i = 0; i < Current_amout_of_items; i++)
             {
-                int index = main_Array[i].internal_name.IndexOf(search_display_name, StringComparison.OrdinalIgnoreCase);
+                int index = main_Array[i].Internal_name.IndexOf(search_display_name, StringComparison.OrdinalIgnoreCase);
 
                 bool containsSubString = (index != -1);
                 if (containsSubString)
@@ -293,7 +309,7 @@ void Find_item()
             search_display_name = Console.ReadLine();
             for (int i = 0; i < Current_amout_of_items; i++)
             {
-                int index = main_Array[i].manufacturer.IndexOf(search_display_name, StringComparison.OrdinalIgnoreCase);
+                int index = main_Array[i].Manufacturer.IndexOf(search_display_name, StringComparison.OrdinalIgnoreCase);
 
                 bool containsSubString = (index != -1);
                 if (containsSubString)
@@ -305,4 +321,24 @@ void Find_item()
         default: 
             break;
     }
+}
+void Delete_item()
+{while (true)
+    {
+        Output_items();
+        Console.WriteLine("Which item to delete? ");
+        int index_to_delete;
+        bool Boolean = int.TryParse(Console.ReadLine(), out index_to_delete);
+        if (Boolean)
+        {
+            for (int i = index_to_delete - 1; i < main_Array.Length - 1; i++)
+            {
+                main_Array[i] = main_Array[i + 1];
+            }
+            Current_amout_of_items--;
+            return;
+        }
+        else Console.WriteLine($"Numbers only, 1 tp {main_Array.Length}");
+    }
+
 }
