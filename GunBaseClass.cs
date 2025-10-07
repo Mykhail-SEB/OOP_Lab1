@@ -94,14 +94,25 @@ namespace OOP_Lab1
                 else _ammo_reserve = value; 
             }
         }
-        public int Damage { get; set; }
+        public int Damage 
+        { 
+            get { return  _damage; } 
+            set
+            {
+                if (value < 0)
+                    throw new Exception("Damage cannot be smaller than 1. ");
+                if (value > 120)
+                    throw new Exception("Damage cannot be greater than 120");
+                else _damage = value;
+            }
+        }
         #endregion
+
         #region functions;
         public string General_info()
         {
             return ("Name: " + _display_name + "\n" + "Manufacturer: " + _manufacturer);
         }
-
         public string check_ammo()
         {
             return (_loaded_ammo + " rounds out of " + _max_ammo);
@@ -156,6 +167,32 @@ namespace OOP_Lab1
                 return "The gun clicks. It seems that it has ran out of bullets.";
             }
         }
+        public string Fire(int Bullets_to_fire)
+        {
+
+            if (_loaded_ammo >= Bullets_to_fire)
+            {
+                _loaded_ammo -= Bullets_to_fire;
+                for (int i = 0; i < Bullets_to_fire; i++)
+                {
+                    Deal_damage(Damage);
+                }
+                return $"Fired {Bullets_to_fire} rounds. ";
+            }
+            else if (_loaded_ammo >= 1 && _loaded_ammo < Bullets_to_fire)
+            {
+                for (int i = 0; i < _loaded_ammo; i++)
+                {
+                    Deal_damage(Damage);
+                }
+                _loaded_ammo = 0;
+                return "The burst stops earlier than expected. The gun is empty!";
+            }
+            else
+            {
+                return "The gun clicks. It seems that it has ran out of bullets.";
+            }
+        }
         public string FireTenRounds()
         {
             if (_loaded_ammo >= 10)
@@ -187,12 +224,31 @@ namespace OOP_Lab1
                 $", Manufacturer: {_manufacturer}, Date of production: {_manufacturing_date}");
         }
         #endregion
-        #region constructor
-        public GunBase_Class(string user)
+
+        #region constructors
+        public GunBase_Class()
         {
-            _user_who_created = user;
+            _user_who_created = "unknown";
             _loaded_ammo = _max_ammo;
         }
+        public GunBase_Class(string user) : base()
+        {
+            _user_who_created = user;
+        }
+        
+        public GunBase_Class(string display_name, string internal_name, int mag_size, int reserve_size, string manufacturer, string prod_date, int damage, string user)
+        {
+            Display_name = display_name;
+            Internal_name = internal_name;
+            Max_ammo = mag_size;
+            Ammo_reserve = reserve_size;
+            Manufacturer = manufacturer;
+            Manufacturing_date = prod_date;
+            Damage = damage;
+            _loaded_ammo = Max_ammo;
+            _user_who_created = user;
+        }
         #endregion
+
     }
 }

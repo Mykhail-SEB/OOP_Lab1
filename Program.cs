@@ -4,6 +4,7 @@ using System.Data.SqlTypes;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.Intrinsics.Arm;
 using OOP_Lab1;
 int Current_amout_of_items=0;
 string userName = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
@@ -80,7 +81,17 @@ while (true){
     Console.WriteLine("  4. Interactions");
     Console.WriteLine("  5. Delete item");
     Console.WriteLine("  0. Close the program");
-    Console.WriteLine(new string('–', 40) + "\n");
+    Console.WriteLine(new string('–', 40) + "\n"); 
+    //bool Boolean;
+    //do
+    //{
+    //    Boolean = int.TryParse(Console.ReadLine(), out menu_choice);
+    //    if (!(Boolean))
+    //    {
+
+    //        Boolean = true;
+    //    }
+    //} while (Boolean);
     menu_choice = int.Parse(Console.ReadLine());
     switch (menu_choice)
     {
@@ -123,15 +134,16 @@ string Interact_menu(GunBase_Class Temp)
 {
     while (true)
     {
-        Console.WriteLine("\n" + new string('–', 25));
-        Console.WriteLine("1. Output general info.");
-        Console.WriteLine("2. Check magazine.");
-        Console.WriteLine("3. Check how much left in reserve.");
-        Console.WriteLine("4. Reload.");
-        Console.WriteLine("5. Fire one round.");
-        Console.WriteLine("6. Fire ten rounds.");
-        Console.WriteLine("9. Return to menu.");
-        Console.WriteLine(new string('–', 25)+ "\n");
+        Console.WriteLine("\n" + new string('–', 26));
+        Console.WriteLine(" 1. Output general info.");
+        Console.WriteLine(" 2. Check magazine.");
+        Console.WriteLine(" 3. Check how much left in reserve.");
+        Console.WriteLine(" 4. Reload.");
+        Console.WriteLine(" 5. Fire one round.");
+        Console.WriteLine(" 6. Fire ten rounds.");
+        Console.WriteLine(" 7. Fire some rounds.");
+        Console.WriteLine(" 9. Return to menu.");
+        Console.WriteLine(new string('–', 26)+ "\n");
         int choice = int.Parse(Console.ReadLine());
         string output;
         switch (choice)
@@ -160,78 +172,104 @@ string Interact_menu(GunBase_Class Temp)
                 output = Temp.FireTenRounds();
                 Console.WriteLine(output);
                 break;
+            case 7:
+                bool Flag;
+                do
+                {
+                    Console.WriteLine(" How many bullets to fire? ");
+                    int Bullets_to_fire;
+                    Flag = int.TryParse(Console.ReadLine(), out Bullets_to_fire);
+                    if (Flag)
+                    {
+                        if (Bullets_to_fire >0 && Bullets_to_fire <+ 50)
+                        {
+                            output = Temp.Fire(Bullets_to_fire);
+                            Console.WriteLine(output);
+                            break;
+                        }
+                        else
+                        {
+                            if (Bullets_to_fire < 1)
+                                Console.WriteLine(" Well, you wanted to fire, right? so do it! ");
+                            if (Bullets_to_fire > 50)
+                                Console.WriteLine(" The gun will overheat! dont try to fire more than 50 at once.");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine(" Integer please, not a string. ");
+                        Flag = true;
+                    }
+                } while (Flag);
+                    break;
             case 9:
                 return "Back to the menu.";
             default:
-                Console.WriteLine("Pick 1-6 or 9.\n");
+                Console.WriteLine("Pick 1-7 or 9.\n");
                 break;
         }
     }
 }
 void create_object()
 {
-    string public_name="placeholder", private_name = "placeholder", manufac = "placeholder", date = "01.01.1981";
-    int ammo_mag=1, ammo_reserve;
-    GunBase_Class Object = new GunBase_Class(userName);
-    bool Flag=false ;
-    do //visible name
+    string public_name = "placeholder", private_name = "placeholder", manufac = "placeholder", date = "01.01.1981";
+    int ammo_mag = 1, ammo_reserve, damage = 1;
+    GunBase_Class Object = new GunBase_Class();
+    bool Flag = false;
+    do 
     {
         Flag = false;
-        Console.WriteLine("Input displayed name: ");
+        Console.WriteLine(" Input displayed name: ");
         public_name = Console.ReadLine();
         try { Object.Display_name = public_name; }
-        catch(Exception ex) 
-        { 
+        catch (Exception ex)
+        {
             Console.WriteLine(ex.Message);
             Flag = true;
         }
-    
-    } while (Flag);   // 
 
-    
-    do //internal name
+    } while (Flag); //visible name
+    do 
     {
         Flag = false;
-        Console.WriteLine("Input internal name: ");
+        Console.WriteLine(" Input internal name: ");
         private_name = Console.ReadLine();
         try { Object.Internal_name = private_name; }
         catch (Exception ex) { Console.WriteLine(ex.Message);
             Flag = true;
         }
-    } while (Flag); 
-
-    do //magsize
+    } while (Flag);//internal name
+    do
     {
         Flag = false;
         bool Boolean;
-        Console.WriteLine("Input the mag size: ");
+        Console.WriteLine(" Input the mag size: ");
         Boolean = Int32.TryParse(Console.ReadLine().ToString(), out ammo_mag); //tryparse
-        try{ Object.Max_ammo = ammo_mag; }
+        try { Object.Max_ammo = ammo_mag; }
         catch (Exception ex) { Console.WriteLine(ex.Message);
             Flag = true;
         };
-    } while (Flag);
-
-    do //reserve ammo
+    } while (Flag);//magsize
+    do 
     {
         Flag = false;
         bool Boolean;
-        Console.WriteLine("Input the reserve size: ");
+        Console.WriteLine(" Input the reserve size: ");
         Boolean = Int32.TryParse(Console.ReadLine().ToString(), out ammo_reserve);//tryparse
         if (!(Boolean))
         {
             ammo_reserve = -1;
         }
         try { Object.Ammo_reserve = ammo_reserve; }
-        catch(Exception ex) { Console.WriteLine(ex.Message);
+        catch (Exception ex) { Console.WriteLine(ex.Message);
             Flag = true;
         }
-    } while (Flag);
+    } while (Flag);//reserve ammo
 
     do //manufacturer
     {
         Flag = false;
-        Console.WriteLine("Input name of manufacturer: ");
+        Console.WriteLine(" Input name of manufacturer: ");
         manufac = Console.ReadLine();
         try { Object.Manufacturer = manufac; }
         catch (Exception ex)
@@ -239,20 +277,72 @@ void create_object()
             Console.WriteLine(ex.Message);
             Flag = true;
         }
-    }  while (Flag);
+    } while (Flag);//manufacturer
 
-    do //Manufacturing date
+    DateTime localDate;
+    do 
     {
-        DateTime localDate = DateTime.Now;
+        localDate = DateTime.Now;
         Object.Manufacturing_date = localDate.ToString();
-    } while (false);
-    Object.Display_name = public_name;
-    Object.Internal_name = private_name;
-    Object.Max_ammo = ammo_mag;
-    Object.Ammo_reserve = ammo_reserve;
-    Object.Manufacturer = manufac;
+    } while (false);//Manufacturing date
+    do 
+    {
+        Flag = false;
+        bool Boolean;
+        Console.WriteLine(" How much damage should the gun deal? ");
+        Boolean = Int32.TryParse(Console.ReadLine().ToString(), out damage);
+        if (!(Boolean))
+        {
+            damage = -1;
+            Console.WriteLine(" Input integer. ");
+            continue;
+        }
+        try { Object.Damage = damage; }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Flag = true;
+        }
+
+    } while (Flag);//Damage
+
+    Random intger = new Random();
+    int constructor_rng = intger.Next(1, 4);
+    switch (constructor_rng) {
+        case 1:
+            {
+                Object = new GunBase_Class();
+                Object.Display_name = public_name;
+                Object.Internal_name = private_name;
+                Object.Max_ammo = ammo_mag;
+                Object.Ammo_reserve = ammo_reserve;
+                Object.Manufacturer = manufac;
+                Object.Manufacturing_date = localDate.ToString();
+                Console.WriteLine("  Constructor used: GunBase_Class()");
+                break;
+            } 
+        case 2:
+            {
+                Object = new GunBase_Class(userName);
+                Object.Display_name = public_name;
+                Object.Internal_name = private_name;
+                Object.Max_ammo = ammo_mag;
+                Object.Ammo_reserve = ammo_reserve;
+                Object.Manufacturer = manufac;
+                Object.Manufacturing_date = localDate.ToString();
+                Console.WriteLine("  Constructor used: GunBase_Class(userName)");
+                break;
+            }
+        case 3:
+            {
+                Object = new GunBase_Class(public_name, private_name, ammo_mag, ammo_reserve, manufac, localDate.ToString(), damage, userName);
+                Console.WriteLine("  Constructor used: GunBase_Class(public_name, private_name, ammo_mag, ammo_reserve, manufac, localDate.ToString(), damage, userName)");
+                break;
+            }
+    }
+
     main_Array[Current_amout_of_items] = Object;
-    Console.WriteLine("Object created!");
+    Console.WriteLine("  Object created!");
     Current_amout_of_items++;
 }
 void Output_items()
@@ -260,7 +350,7 @@ void Output_items()
     for (int i = 0; i < Current_amout_of_items; i++)
     {
         GunBase_Class item = main_Array[i];
-        Console.WriteLine(i+1 +". " + item.ToString());
+        Console.WriteLine($" {i + 1}. {item.ToString()}");
     }
 }
 void Find_item()
