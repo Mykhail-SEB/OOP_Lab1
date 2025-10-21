@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Net.WebSockets;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
@@ -15,7 +18,31 @@ namespace OOP_Lab1
         private int _max_ammo, _loaded_ammo, _ammo_reserve;
         private int _damage;
 
+        private static int _item_counter;
+        public static int total_amount_of_shots =0;
+
         #region fields
+
+        public static int Item_counter
+        {
+            get { return _item_counter; }
+            set
+            {
+                _item_counter = value;
+            }
+        }
+        public string Display_name
+        {
+            get { return _display_name; }
+            set
+            {
+                if (value.Length < 3)
+                    throw new Exception("The name is too short.");
+                if (value.Length > 20)
+                    throw new Exception("The name is too long.");
+                else _display_name = value;
+            }
+        }
         public string Internal_name
         {
             get { return _internal_name; }
@@ -43,18 +70,6 @@ namespace OOP_Lab1
                 if (value.Length > 20)
                     throw new Exception("Name of manufacturer is too long, Must be shorter than 20");
                 else _manufacturer = value; 
-            }
-        }
-        public string Display_name
-        {
-            get { return _display_name; }
-            set 
-            {
-                if (value.Length < 3)
-                    throw new Exception("The name is too short.");
-                if (value.Length > 20)
-                    throw new Exception("The name is too long.");
-                else _display_name = value; 
             }
         }
         public string User_who_created
@@ -149,6 +164,7 @@ namespace OOP_Lab1
         }
         private void Deal_damage(int Damage)
         {
+            total_amount_of_shots++;
             Random RNG = new Random();
             int RandomDamageModifier = RNG.Next(75, 126);
             Console.WriteLine($"Dealt {Damage * RandomDamageModifier / 100} points of damage.");
@@ -220,8 +236,94 @@ namespace OOP_Lab1
         }
         public override string ToString()
         {
-            return ($"Name: {_display_name}, Internal name: {_internal_name}, Magazine size: {_max_ammo}, Reserves: {_ammo_reserve}" +
-                $", Manufacturer: {_manufacturer}, Date of production: {_manufacturing_date}");
+            return ($"{_display_name}, {_internal_name}, {_max_ammo}, {_ammo_reserve}, {_manufacturer}, {_manufacturing_date}, {Damage}");
+        }
+        public static GunBase_Class Parse(string input_string)
+        {
+            string[] input_string_array = input_string.Split(", ", StringSplitOptions.RemoveEmptyEntries);
+            #region checks for TryParse
+            string display_Name, internal_name, manufacturer_name, manufacturer_date;
+            int mag_size = 15000, reserve_ammo, damage;
+            bool Flag_wrong_amount_parameters = false;
+            try
+            {
+                if (input_string_array.Length != 7)
+                {
+                    Flag_wrong_amount_parameters = true;
+                    throw new Exception("Wrong amount of parameters for parse!");
+                }
+                //bool Flag_publicName = false;
+                display_Name = input_string_array[0];
+                if (display_Name.Length < 3)
+                    throw new Exception("Public name is too short.");
+                if (display_Name.Length > 20)
+                    throw new Exception("Public name is too long.");
+                //Flag_publicName = true;
+                //bool Flag_privateName = false;
+                internal_name = input_string_array[1];
+                if (internal_name.Length < 3)
+                    throw new Exception("Internal name is too short.");
+                if (internal_name.Length > 20)
+                    throw new Exception("Internal name is too long.");
+                //Flag_privateName = true;
+                //bool Flag_magSize = false;
+                mag_size = int.Parse(input_string_array[2]);
+                if (mag_size <= 0)
+                    throw new Exception("Magazine size must be greater than 0.");
+                if (mag_size >= 100)
+                    throw new Exception($"Magazine size must be lesser than 100.");
+                //Flag_magSize = true;
+                //bool Flag_reserveAmmo = false;
+                mag_size = int.Parse(input_string_array[3]);
+                if (mag_size < 0)
+                    throw new Exception("Reserve of ammunition must be greater or equal to 0.");
+                if (mag_size >= (mag_size * 10))
+                    throw new Exception($"Reserve of ammunition must be lesser than {(mag_size * 10)}.");
+                //        Flag_reserveAmmo = true;
+                // bool Flag_manufacturer = false;
+                manufacturer_name = input_string_array[4];
+                if (manufacturer_name.Length < 3)
+                    throw new Exception("Name of manufacturer is too short, must be longer than 3");
+                if (manufacturer_name.Length > 20)
+                    throw new Exception("Name of manufacturer is too long, Must be shorter than 20");
+                //        Flag_manufacturer = true;
+                bool Flag_manufacturingDate = false;
+                manufacturer_date = input_string_array[5];
+                //bool Flag_damage = false;
+                damage = int.Parse(input_string_array[6]);
+                if (damage < 0)
+                    throw new Exception("Damage cannot be smaller than 1. ");
+                if (damage > 120)
+                    throw new Exception("Damage cannot be greater than 120");
+                //Flag_damage = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            #endregion
+            string user = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+                GunBase_Class Parsed_Item = new GunBase_Class(input_string_array[0], input_string_array[1], int.Parse(input_string_array[2]), int.Parse(input_string_array[3]), input_string_array[4], input_string_array[5], int.Parse(input_string_array[6]), user);
+                return Parsed_Item;
+        }
+        public static bool TryParse(string input_string,  out GunBase_Class Parsed_item)
+        {
+            Parsed_item = null;
+            try
+            {
+                Parsed_item = GunBase_Class.Parse(input_string);
+                return true;
+            }
+            catch (Exception ex) 
+            { 
+                Console.WriteLine("Something went wrong!");
+                return false;
+            }
+        }
+
+        public static string Total_amount_shots_print()
+        {
+            return total_amount_of_shots.ToString();
         }
         #endregion
 
@@ -245,8 +347,8 @@ namespace OOP_Lab1
             Manufacturer = manufacturer;
             Manufacturing_date = prod_date;
             Damage = damage;
-            _loaded_ammo = Max_ammo;
-            _user_who_created = user;
+            Loaded_ammo = Max_ammo;
+            User_who_created = user;
         }
         #endregion
 
