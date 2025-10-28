@@ -520,3 +520,13 @@ void Demonstrate_static_methods()
     };
 }
 #endregion
+
+
+//GunBase_Class test_item = new();
+//int expected = 14;
+//test_item.Loaded_ammo = 15; test_item.Max_ammo = 20; test_item.Ammo_reserve = 15;
+//test_item.Fire();
+//int actual =  test_item.Loaded_ammo;
+////Assert.AreEqual(expected, actual);
+
+//GunBase_Class.total_amount_of_shots=1;

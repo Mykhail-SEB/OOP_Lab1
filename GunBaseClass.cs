@@ -11,7 +11,7 @@ using System.Threading.Tasks.Sources;
 
 namespace OOP_Lab1
 {
-    internal class GunBase_Class
+    public class GunBase_Class
     {
         private string _internal_name, _manufacturing_date, _manufacturer;
         private string _display_name, _user_who_created;
@@ -19,7 +19,7 @@ namespace OOP_Lab1
         private int _damage;
 
         private static int _item_counter;
-        public static int total_amount_of_shots =0;
+        public static int total_amount_of_shots = 0;
 
         #region fields
 
@@ -94,7 +94,7 @@ namespace OOP_Lab1
             get { return _loaded_ammo; }
             set
             {
-                _loaded_ammo = value; 
+                _loaded_ammo = value;
             }
         }
         public int Ammo_reserve
@@ -126,7 +126,7 @@ namespace OOP_Lab1
         #region functions;
         public string General_info()
         {
-            return ("Name: " + _display_name + "\n" + "Manufacturer: " + _manufacturer);
+            return ("Name: " + _display_name  + ", Manufacturer: " + _manufacturer);
         }
         public string check_ammo()
         {
@@ -162,20 +162,19 @@ namespace OOP_Lab1
             }
             return (" ");
         }
-        private void Deal_damage(int Damage)
+        private void Deal_damage(float Damage)
         {
-            total_amount_of_shots++;
             Random RNG = new Random();
-            int RandomDamageModifier = RNG.Next(75, 126);
-            Console.WriteLine($"Dealt {Damage * RandomDamageModifier / 100} points of damage.");
+            float RandomDamageModifier = RNG.Next(75, 126) / 100;
+            Console.WriteLine($"Dealt {Damage * RandomDamageModifier} points of damage.");
         }
         public string Fire()
         {
-            Random rnd = new Random();
             if (_loaded_ammo>=1)
             {
                 _loaded_ammo -= 1;
                 Deal_damage(Damage);
+                total_amount_of_shots++;
                 return "*pew*";
             }
             else
@@ -192,6 +191,7 @@ namespace OOP_Lab1
                 for (int i = 0; i < Bullets_to_fire; i++)
                 {
                     Deal_damage(Damage);
+                    total_amount_of_shots++;
                 }
                 return $"Fired {Bullets_to_fire} rounds. ";
             }
@@ -200,6 +200,7 @@ namespace OOP_Lab1
                 for (int i = 0; i < _loaded_ammo; i++)
                 {
                     Deal_damage(Damage);
+                    total_amount_of_shots++;
                 }
                 _loaded_ammo = 0;
                 return "The burst stops earlier than expected. The gun is empty!";
@@ -217,6 +218,7 @@ namespace OOP_Lab1
                 for (int i = 0; i<10;i++)
                 {
                     Deal_damage(Damage);
+                    total_amount_of_shots++;
                 }
                 return "*pew-pew*";
             }
@@ -225,6 +227,7 @@ namespace OOP_Lab1
                 for (int i = 0; i < _loaded_ammo; i++)
                 {
                     Deal_damage(Damage);
+                    total_amount_of_shots++;
                 }
                 _loaded_ammo = 0;
                 return "The burst stops earlier than expected. The gun is empty!";
@@ -236,7 +239,7 @@ namespace OOP_Lab1
         }
         public override string ToString()
         {
-            return ($"{_display_name}, {_internal_name}, {_max_ammo}, {_ammo_reserve}, {_manufacturer}, {_manufacturing_date}, {Damage}");
+            return ($"{_display_name}, {_internal_name}, {_max_ammo}, {_ammo_reserve}, {_manufacturer}, {_manufacturing_date}, {_damage}");
         }
         public static GunBase_Class Parse(string input_string)
         {
