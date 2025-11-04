@@ -323,11 +323,11 @@ namespace OOP_Lab1
                 return false;
             }
         }
-
         public static string Total_amount_shots_print()
         {
             return total_amount_of_shots.ToString();
         }
+
         #endregion
 
         #region constructors
