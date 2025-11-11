@@ -1,11 +1,14 @@
 ﻿// Console.WriteLine("\n" + new string('–', 25));
 // Console.WriteLine(new string('–', 25) + "\n");
 using System.Data.SqlTypes;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.Intrinsics.Arm;
+using Newtonsoft.Json;
 using OOP_Lab1;
 public class Program
 {
@@ -23,14 +26,17 @@ public class Program
         GunBase_Class placeholder_gun = new(userName);
         MainList.Capacity = 3;
         MainList.Add(placeholder_gun);
-
+        string StoragePathForFiles;
         Console.WriteLine("-1 = Make 4 items for debug purposes");
         Console.WriteLine("How many items you want to make? ");
         N = int.Parse(Console.ReadLine());
         switch (N)
         {
             case -1:
+
                 Run_Debug_Filling();
+                //StoragePathForFiles = "C:\\Users\\DM\\Desktop\\Текстовики\\Универ\\Курс 2\\ООР\\Files_Storage_folder";
+                //Console.WriteLine($"Debug. Files will be stored at {StoragePathForFiles}");
                 Console.WriteLine("Debug filling, max of items is 10.");
                 N = 10;
                 break;
@@ -53,6 +59,7 @@ public class Program
             Console.WriteLine("  4. Interactions. ");
             Console.WriteLine("  5. Delete item. ");
             Console.WriteLine("  6. Demonstate static methods. ");
+            Console.WriteLine("  7. File sheannigans.  ");
             Console.WriteLine("  9. Display user name.  ");
             Console.WriteLine("  0. Close the program");
             Console.WriteLine(new string('–', 40) + "\n");
@@ -104,13 +111,15 @@ public class Program
                 case 6:
                     Demonstrate_static_methods();
                     break;
+                case 7:
+                    FileSubmenu();
+                    break;
                 case 9:
                     string temp = Output_user_name();
                     Console.WriteLine(temp);
                     break;
                 case 0:
                     return;
-                    break;
                 default:
                     Console.WriteLine("Input 1-6, or 9, or 0.");
                     break;
@@ -119,23 +128,196 @@ public class Program
         #endregion
     }
     #region Functions
-    static void junk()
-        {//static void ClearCurrentConsoleLine()
-         //{
-         //    //Console.WriteLine(Console.GetCursorPosition());
-         //    int currentLineCursor = Console.CursorTop;
-         //    Console.SetCursorPosition(0, Console.CursorTop);
-         //    Console.Write(new string(' ', Console.WindowWidth));
-         //    Console.SetCursorPosition(0, currentLineCursor);
-         //}
-         //void Clear_Console()
-         //{
-         //    Console.WriteLine("Test");
-         //    Console.SetCursorPosition(0, Console.CursorTop - 1);
-         //    ClearCurrentConsoleLine();
-         //    //Console.Clear();
-         //}
+
+    static void FileSubmenu()
+    {
+        //Console.WriteLine($"Input path to directory");
+        Console.WriteLine($"    1.  Save existing items to .CSV.  ");
+        Console.WriteLine($"    2.  Save existing items to .JSON.  ");
+        Console.WriteLine($"    3.  Read items from .CSV.  ");
+        Console.WriteLine($"    4.  Read items from .JSON.  ");
+        Console.WriteLine($"    5.  Purge the items. ");
+        Console.WriteLine($"    6.  Open the folder with the .csv and .json files.  ");
+        #region TryParse stuff collapsed for space
+        bool Boolean; int CSVandJSON;
+        do
+        {
+            Boolean = int.TryParse(Console.ReadLine(), out CSVandJSON);
+            if (Boolean)
+            {
+                Boolean = false;
+            }
+            else
+            {
+                Boolean = true;
+                Console.WriteLine("Input numbers.");
+            }
+        } while (Boolean);
+        #endregion
+        switch (CSVandJSON)
+        {
+            case 1:
+                {
+                    Console.WriteLine($"Write the file name for the .CSV file:  ");
+                    string? filename = Console.ReadLine();
+                    if (!string.IsNullOrEmpty(filename))
+                    {
+
+                        filename += ".csv";
+                        SaveToCSV(MainList, filename);
+                    }
+                    break;
+                } //save csv
+            case 2:
+                {
+                    Console.WriteLine($"Write the file name for the .JSON file:  ");
+                    string? filename = Console.ReadLine();
+                    if (!string.IsNullOrEmpty(filename))
+                    {
+                        filename += ".json";
+                        SaveToJSON(MainList, filename);
+                    }
+                    break;
+                } //save json
+            case 3:
+                {
+
+                    Console.WriteLine($"Write the file name for the .CSV file:  ");
+                    string? filename = Console.ReadLine();
+                    if (!string.IsNullOrEmpty(filename))
+                    {
+                        filename += ".csv";
+                        List<GunBase_Class> temp = ReadFromCSV(filename);
+                        foreach (GunBase_Class item in temp)
+                        {
+                            MainList.Add(item);
+                        }
+                        GunBase_Class.Item_counter += temp.Count;
+                    }
+                    break;
+                } //read csv
+            case 4:
+                {
+                    Console.WriteLine($"Write the file name for the .JSON file:  ");
+                    string? path = Console.ReadLine();
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        path += ".json";
+                        List<GunBase_Class> temp = ReadFromJSON(path);
+                        foreach (GunBase_Class item in temp)
+                        {
+                            MainList.Add(item);
+                        }
+                        GunBase_Class.Item_counter += temp.Count;
+                    }
+                    break;
+                } //read json
+            case 5:
+                {
+                    for (int i = 0; i< MainList.Count; i++)
+                    {
+                        MainList.RemoveAt(i);
+                        GunBase_Class.Item_counter--;
+                        i--;
+                    }
+                    break;
+                } //delete all items 
+            case 6:
+                {
+                    string ActiveWorkFolder = "C:\\Users\\DM\\source\\repos\\OOP_Lab1\\bin\\Debug\\net8.0";
+                    Process.Start("explorer.exe", ActiveWorkFolder);
+                    break;
+                } // open folder with items
+            default:
+                {
+                    Console.WriteLine("Input numbers 1-6, please, don't test the limits of this program. ");
+                    break;
+                }
         }
+    }
+    static void SaveToCSV(List<GunBase_Class> ListToSave, string Storage_Path)
+    {
+        List<string> IndividualItems = new List<string>();
+        
+        foreach (GunBase_Class Item in ListToSave )
+        {
+            IndividualItems.Add(Item.ToString());
+        }
+        try
+        {
+            File.WriteAllLines(Storage_Path, IndividualItems);
+            Console.WriteLine($"        .CSV file is stored at {Path.GetFullPath(Storage_Path)}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"        {ex.Message}");
+        }
+    }
+    static List<GunBase_Class> ReadFromCSV(string Path)
+    {
+        List<GunBase_Class> List = new List<GunBase_Class>();
+
+        try
+        {
+            List<string> lines = File.ReadAllLines(Path).ToList();
+            foreach (string line in lines)
+            {
+                bool Boolean = GunBase_Class.TryParse(line, out GunBase_Class? ParsedItem);
+                if (Boolean) { List.Add(ParsedItem); }
+                Console.WriteLine($"        Got line from file: {ParsedItem}");
+            }
+        }
+        catch (IOException ex) { Console.WriteLine($"       Error reading file, {ex.Message}"); }
+        catch (Exception ex)        { Console.WriteLine($"      {ex.Message}"); }
+
+        return List;
+    }
+    //static void ReadFromCVS_OUT(string PathToFile, out List<GunBase_Class> MainList)
+    //{
+
+    //}
+    static void SaveToJSON(List<GunBase_Class> ListToSave, string Storage_Path)
+    {
+        try
+        {
+            string jsonstring = "";
+
+            foreach (GunBase_Class item in ListToSave)
+            {
+                jsonstring += JsonConvert.SerializeObject(item);
+                jsonstring += "\r\n";
+            }
+            File.WriteAllText(Storage_Path, jsonstring);
+            Console.WriteLine($"        Saved .JSON file at {Path.GetFullPath(Storage_Path)}");
+        }
+
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+    }
+    static List<GunBase_Class> ReadFromJSON(string Path)
+    {
+        List<GunBase_Class> ReadList = new List<GunBase_Class>();
+        try
+        {
+            List<string> Lines = new List<string>();
+            Lines = File.ReadAllLines(Path).ToList();
+            foreach (string line in Lines)
+            {
+                GunBase_Class? item = JsonConvert.DeserializeObject<GunBase_Class>(line);
+                if (item != null) ReadList.Add(item);
+            }
+
+        }
+        catch (IOException ex ) { Console.WriteLine(ex.Message); }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+
+        return ReadList;
+    }
+    //static void ReadFromJSON_OUT(string PathToFile, out List<GunBase_Class> MainList)
+    //{
+
+    //}
+
+
     public static string Output_user_name()
     {
         string userName = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
@@ -143,6 +325,7 @@ public class Program
     }
     static void Run_Debug_Filling()
     {
+        //userName = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
         GunBase_Class Temp = new(userName)
         {
             Damage = 23,
